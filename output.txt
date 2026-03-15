@@ -1,0 +1,15 @@
+Successfully allocated 40B, src/main.c:4
+Successfully allocated 400B, src/main.c:6
+Successfully allocated 400B, src/main.c:7
+Successfully allocated 4000B, src/main.c:9
+
+Leaked: 4400B
+Total: 4840B
+Peak: 4400B
+
+Allocated at src/main.c:6
+Bytes allocated and lost: 400
+
+Allocated at src/main.c:9
+Bytes allocated and lost: 4000
+
