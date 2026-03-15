@@ -1,7 +1,35 @@
+#include <string.h>
+#define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+
 #include "../include/memtrace.h"
 #undef malloc
 #undef free
 #include "../include/darray.h"
+
+int print_line_from(const char *filename, int pos) {
+    if (pos < 0) return -1;
+    FILE *f = fopen(filename, "r");
+    if (!f) return -1;
+    char line[256];
+    int counter = 0;
+    int found = 0;
+    while (fgets(line, sizeof line, f) != NULL) {
+        if (counter == pos) {
+            size_t len = strlen(line);
+            if (len == sizeof(line) - 1 && line[len - 1] != '\n') {
+                fclose(f);
+                return -2;
+            }
+            printf("%s%s%s",ANSI_COLOR_GREEN, line, ANSI_COLOR_RESET);
+            found = 1;
+            break;
+        }
+        counter++;
+    }
+    fclose(f);
+    return found ? 0 : -1;
+}
 
 DARRAY_INIT(mem_info)
 DARRAY_BIND(mem_info, info)
@@ -36,8 +64,6 @@ void memtrace_free(void* ptr) {
          mem_info new = info_at(i);
          new.bytes_alloced = 0;
          info_replace(i, new);
-         // TODO: Introduce a _replace(size_t index, T new_node) and _remove(size_t index) methods in darray to rewrite nodes
-         // Maybe _append(T new_node) while we are at it
       }
    }
    free(ptr);
@@ -52,8 +78,9 @@ int memtrace_exit(void) { // to return from main
       total += info_at(i).initial_size;
 
       if (alloced.bytes_alloced > 0) {
-         printf("\nAllocated at %s:%zu\n", alloced.file, alloced.line); // TODO print the line contents
-         printf("Bytes allocated and lost: %zu\n", alloced.bytes_alloced);
+         printf("\nAllocated at %s:%zu", alloced.file, alloced.line);
+         printf(" and lost: %zu\n", alloced.bytes_alloced);
+         print_line_from(alloced.file, alloced.line-1);
       }
    }
 
