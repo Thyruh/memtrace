@@ -3,7 +3,7 @@
 
 # 1: memtrace_malloc():
 memtrace_malloc() highjacks malloc() and keeps the details about the allocation in a dynamic array of mem_info objects.
-The default usage is through a macro wrapper malloc() for __LINE__ and __FILE__ details for the logging system.
+The default usage is through a macro wrapper malloc() for \_\_LINE\_\_ and __FILE__ details for the logging system.
 # 2: memtrace_free():
 memtrace_free() highjacks free() deleting the details about the allocation of provided pointers.
 # 3: memtrace_exit():
