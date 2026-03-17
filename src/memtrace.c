@@ -1,4 +1,3 @@
-#include <string.h>
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 
@@ -6,6 +5,12 @@
 #undef malloc
 #undef free
 #include "../include/darray.h"
+
+size_t strlen_(char* p) {
+   char* base = p;
+   while (*p != 0) p++;
+   return p-base;
+}
 
 int print_line_from(const char *filename, int pos) {
     if (pos < 0) return -1;
@@ -16,7 +21,7 @@ int print_line_from(const char *filename, int pos) {
     int found = 0;
     while (fgets(line, sizeof line, f) != NULL) {
         if (counter == pos) {
-            size_t len = strlen(line);
+            size_t len = strlen_(line);
             if (len == sizeof(line) - 1 && line[len - 1] != '\n') {
                 fclose(f);
                 return -2;
@@ -31,6 +36,8 @@ int print_line_from(const char *filename, int pos) {
     return found ? 0 : -1;
 }
 
+// DARRAY_INIT(int)
+// DARRAY_BIND(int, non_repeating_lines)
 DARRAY_INIT(mem_info)
 DARRAY_BIND(mem_info, info)
 
@@ -72,10 +79,11 @@ void memtrace_free(void* ptr) {
 int memtrace_exit(void) { // to return from main
    size_t leaked = 0;
    size_t total = 0;
-   for (size_t i = 0; i < info.size; i++) {
+   for(size_t i = 0; i < info.size; i++) {
       mem_info alloced = info_at(i);
       leaked += alloced.bytes_alloced;
-      total += info_at(i).initial_size;
+      total  += alloced.initial_size;
+      // TODO check for loops to prevent N consecutive "lost x bytes at main.c:11"
 
       if (alloced.bytes_alloced > 0) {
          printf("\nAllocated at %s:%zu", alloced.file, alloced.line);
