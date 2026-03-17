@@ -13,7 +13,7 @@ size_t strlen_(char* p) {
 }
 
 int print_line_from(const char *filename, int pos) {
-    if (pos < 0) return -1;
+    if (pos-- < 0) return -1; // not sure why we need to decrement it but i think it works... mostly?
     FILE *f = fopen(filename, "r");
     if (!f) return -1;
     char line[256];
@@ -36,8 +36,6 @@ int print_line_from(const char *filename, int pos) {
     return found ? 0 : -1;
 }
 
-// DARRAY_INIT(int)
-// DARRAY_BIND(int, non_repeating_lines)
 DARRAY_INIT(mem_info)
 DARRAY_BIND(mem_info, info)
 
@@ -79,22 +77,36 @@ void memtrace_free(void* ptr) {
 int memtrace_exit(void) { // to return from main
    size_t leaked = 0;
    size_t total = 0;
+
+   // for (size_t i = 0; i < info.size; i++) {
+   //    for (size_t j = i+1; i < info.size; i++) {
+   //       if (info_at(i).line == info_at(j).line) {
+   //          mem_info new = info_at(j);
+   //          new.line = 0;
+   //          info_replace(j, new);
+   //       }
+   //    }
+   // }
+
    for(size_t i = 0; i < info.size; i++) {
       mem_info alloced = info_at(i);
       leaked += alloced.bytes_alloced;
       total  += alloced.initial_size;
-      // TODO check for loops to prevent N consecutive "lost x bytes at main.c:11"
+      // TODO check for loops to prevent N consecutive "lost x bytes at main.c:11". Perhaps change the memtrace_malloc() implementation
 
+      // if (alloced.bytes_alloced > 0 && alloced.line != 0) {
       if (alloced.bytes_alloced > 0) {
-         printf("\nAllocated at %s:%zu", alloced.file, alloced.line);
-         printf(" and lost: %zu\n", alloced.bytes_alloced);
-         print_line_from(alloced.file, alloced.line-1);
+         printf("\nAllocated at %s:%zu ", alloced.file, alloced.line);
+         printf("and%s lost%s: %zu\n", ANSI_COLOR_RED, ANSI_COLOR_RESET, alloced.bytes_alloced);
+         print_line_from(alloced.file, alloced.line);
       }
    }
 
-   printf("\nLeaked: %zuB\n", leaked);
+   printf("\n========[SUMMARY]=========\n");
+   printf("Leaked: %zuB\n", leaked);
    printf("Total: %zuB\n", total); 
    printf("Peak: %zuB\n", peak);
+   printf("==========================\n");
 
    if (leaked == 0) printf("[MEMTRACE]: No memory leaks detected.\n");
 

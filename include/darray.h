@@ -64,7 +64,7 @@ static inline void T##_remove(Darray_##T* darray, size_t index) {               
 }                                                                                                                      \
 static inline void T##_append(Darray_##T* darray, T new) {                                                             \
    darray->size++;                                                                                                     \
-   T##_push(darray, new);                                                                                              \
+   T##_push(darray, new);                                                                                               \
    T##_remove(darray, darray->size);                                                                                   \
    for(size_t i = darray->size-1; i > 0; i--) {                                                                        \
       T##_replace(darray, i, T##_at(darray, i-1));                                                                     \
