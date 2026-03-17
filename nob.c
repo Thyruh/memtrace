@@ -9,6 +9,7 @@
 #define SRC "src/"
 
 int main(int argc, char** argv) {
+   nob_mkdir_if_not_exists(DESTINATION);
    NOB_GO_REBUILD_URSELF(argc, argv);
    Nob_Cmd cmd = {0};
    nob_cmd_append(&cmd, CXX, "-o", DESTINATION"main", SRC"main.c", SRC"memtrace.c", CFLAGS);
