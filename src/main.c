@@ -9,6 +9,7 @@ int main(void) {
    ptr = malloc(1);
 
    ptr = malloc(2);
+
    return memtrace_exit();
 }
 

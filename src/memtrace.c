@@ -6,7 +6,7 @@
 #undef free
 #include "../include/darray.h"
 
-size_t strlen_(char* p) {
+inline size_t strlen_(char* p) {
    char* base = p;
    while (*p != 0) p++;
    return p-base;

@@ -2,8 +2,9 @@
 
 #include "nob.h"
 
-#define CXX "gcc"
+#define CXX "clang"
 #define CFLAGS "-Wall", "-Wextra", "-pedantic", "-O3"
+#define EXP_CFLAGS "-fsave-optimization-record=yaml"
 #define CDEBUGFLAGS "-ggdb", "-O0"
 #define DESTINATION "build/"
 #define SRC "src/"

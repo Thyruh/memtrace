@@ -4,8 +4,8 @@ typedef struct {
    size_t initial_size;
    size_t bytes_alloced;
    size_t line;
-   const char*  file;
-   void*  self;
+   const char* file;
+   void* self;
 } mem_info;
 
 int   memtrace_exit(void);
