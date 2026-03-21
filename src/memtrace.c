@@ -19,7 +19,7 @@ void *memset_(void *b, size_t c, size_t len)
 {
     while(b && len > 0)
     {
-        *(size_t*)b = c;
+        *(char*)b = c;
         b++;
         len--;
     }
@@ -95,13 +95,16 @@ void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t li
    for (size_t i = 0; i < info.size; i++) {
       if (ptr == info_at(i).self) {
          mem_info new;
+         new.alloced = size;
+         new.self = tmp;
+         new.file = file;
+         new.line = line;
+         info_replace(i, new);
+
          current -= info_at(i).alloced;
          current += size;
          total -= info_at(i).alloced;
          total += size;
-         new.alloced = size;
-         new.self = tmp;
-         info_replace(i, new);
          if (current > peak) peak = current;
       }
    }
@@ -144,6 +147,7 @@ int memtrace_exit(void) { // to return from main
 
    current = 0;
    peak = 0;
+   total = 0;
 
    info_free();
    return 0;
