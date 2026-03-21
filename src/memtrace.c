@@ -3,6 +3,7 @@
 
 #include "../include/memtrace.h"
 #undef malloc
+#undef calloc
 #undef realloc 
 #undef free
 #include "../include/darray.h"
@@ -11,6 +12,18 @@ inline size_t strlen_(char* p) {
    char* base = p;
    while (*p != 0) p++;
    return p-base;
+}
+
+
+void *memset_(void *b, size_t c, size_t len)
+{
+    while(b && len > 0)
+    {
+        *(size_t*)b = c;
+        b++;
+        len--;
+    }
+    return b;
 }
 
 int print_line_from(const char *filename, int pos) {
@@ -40,6 +53,7 @@ int print_line_from(const char *filename, int pos) {
 DARRAY_INIT(mem_info)
 DARRAY_BIND(mem_info, info)
 
+size_t total = 0;
 size_t current = 0;
 size_t peak    = 0;
 
@@ -47,15 +61,32 @@ void* memtrace_malloc(const size_t size, const char* file, size_t line) {
    void* ptr = malloc(size);
    if (ptr != 0) {
       mem_info new;
-      new.bytes_alloced = size;
-      new.initial_size = size;
+      new.alloced = size;
       new.line = line;
       new.file = file;
       new.self = ptr;
       info_push(new);
       current += size;
+      total += size;
       if (current > peak) peak = current;
    }
+   return ptr;
+}
+
+void* memtrace_calloc(const size_t len, const size_t size, const char* file, size_t line) {
+   void* ptr = malloc(size*len);
+   if (ptr != 0) {
+      mem_info new;
+      new.alloced = size*len;
+      new.line = line;
+      new.file = file;
+      new.self = ptr;
+      info_push(new);
+      current += size*len;
+      total += size*len;
+      if (current > peak) peak = current;
+   }
+   memset_(ptr, 0, size);
    return ptr;
 }
 
@@ -63,16 +94,15 @@ void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t li
    void* tmp = realloc(ptr, size);
    for (size_t i = 0; i < info.size; i++) {
       if (ptr == info_at(i).self) {
-         current += -info_at(i).bytes_alloced + size;
-         if (current > peak) peak = current;
-
          mem_info new;
-         new.bytes_alloced = size;
-         new.initial_size = size;
-         new.line = line;
-         new.file = file;
+         current -= info_at(i).alloced;
+         current += size;
+         total -= info_at(i).alloced;
+         total += size;
+         new.alloced = size;
          new.self = tmp;
          info_replace(i, new);
+         if (current > peak) peak = current;
       }
    }
    return tmp;
@@ -81,9 +111,9 @@ void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t li
 void memtrace_free(void* ptr) {
    for (size_t i = 0; i < info.size; i++) {
       if (ptr == info_at(i).self) {
-         current -= info_at(i).initial_size;
+         current -= info_at(i).alloced;
          mem_info new = info_at(i);
-         new.bytes_alloced = 0;
+         new.alloced = 0;
          info_replace(i, new);
       }
    }
@@ -92,17 +122,14 @@ void memtrace_free(void* ptr) {
 
 int memtrace_exit(void) { // to return from main
    size_t leaked = 0;
-   size_t total = 0;
 
    for(size_t i = 0; i < info.size; i++) {
       mem_info alloced = info_at(i);
-      leaked += alloced.bytes_alloced;
-      total  += alloced.initial_size;
-      // TODO check for loops to prevent N consecutive "lost x bytes at main.c:11". Perhaps change the memtrace_malloc() implementationS
+      leaked += alloced.alloced;
 
-      if (alloced.bytes_alloced > 0) {
+      if (alloced.alloced > 0) {
          printf("\nAllocated at %s:%zu ", alloced.file, alloced.line);
-         printf("and%s lost%s: %zu\n", ANSI_COLOR_RED, ANSI_COLOR_RESET, alloced.bytes_alloced);
+         printf("and%s lost%s: %zu\n", ANSI_COLOR_RED, ANSI_COLOR_RESET, alloced.alloced);
          print_line_from(alloced.file, alloced.line);
       }
    }
@@ -114,6 +141,9 @@ int memtrace_exit(void) { // to return from main
    printf("==========================\n");
 
    if (leaked == 0) printf("[MEMTRACE]: No memory leaks detected.\n");
+
+   current = 0;
+   peak = 0;
 
    info_free();
    return 0;

@@ -1,13 +1,20 @@
 #include "../include/memtrace.h"
 
 int main(void) {
-   int* ptr1 = malloc(1);
-   void* ptr2 = malloc(1);
-   void* ptr3 = malloc(1);
-   void* ptr4 = malloc(10);
+   char* ptr1 = calloc(5, sizeof(int));
 
-   void* ptr7 = realloc(ptr1, 10);
+   char* ptr2 = malloc(5*sizeof(int));
+   free(ptr2);
+   void* ptr3 = malloc(30);
+
+   int sum = 0;
+
+   void* ptr5 = realloc(ptr1, 100);
+
+   printf("sum = %d", sum);
+   free(ptr3);
+
+   free(ptr5);
 
    return memtrace_exit();
 }
-
