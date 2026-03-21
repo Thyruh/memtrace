@@ -1,14 +1,12 @@
 #include "../include/memtrace.h"
 
 int main(void) {
-   void* ptr;
-   for (int i = 1; i < 10; i++) {
-      ptr = malloc(i);
-   }
+   int* ptr1 = malloc(1);
+   void* ptr2 = malloc(1);
+   void* ptr3 = malloc(1);
+   void* ptr4 = malloc(10);
 
-   ptr = malloc(1);
-
-   ptr = malloc(2);
+   void* ptr7 = realloc(ptr1, 10);
 
    return memtrace_exit();
 }

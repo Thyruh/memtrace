@@ -3,6 +3,7 @@
 
 #include "../include/memtrace.h"
 #undef malloc
+#undef realloc 
 #undef free
 #include "../include/darray.h"
 
@@ -58,9 +59,24 @@ void* memtrace_malloc(const size_t size, const char* file, size_t line) {
    return ptr;
 }
 
-// void* memtrace_realloc(void* ptr, const size_t size, char* file, size_t line) { // TODO finish the realloc
-//    return NULL;
-// }
+void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t line) {
+   void* tmp = realloc(ptr, size);
+   for (size_t i = 0; i < info.size; i++) {
+      if (ptr == info_at(i).self) {
+         current += -info_at(i).bytes_alloced + size;
+         if (current > peak) peak = current;
+
+         mem_info new;
+         new.bytes_alloced = size;
+         new.initial_size = size;
+         new.line = line;
+         new.file = file;
+         new.self = tmp;
+         info_replace(i, new);
+      }
+   }
+   return tmp;
+}
 
 void memtrace_free(void* ptr) {
    for (size_t i = 0; i < info.size; i++) {
@@ -78,23 +94,12 @@ int memtrace_exit(void) { // to return from main
    size_t leaked = 0;
    size_t total = 0;
 
-   // for (size_t i = 0; i < info.size; i++) {
-   //    for (size_t j = i+1; i < info.size; i++) {
-   //       if (info_at(i).line == info_at(j).line) {
-   //          mem_info new = info_at(j);
-   //          new.line = 0;
-   //          info_replace(j, new);
-   //       }
-   //    }
-   // }
-
    for(size_t i = 0; i < info.size; i++) {
       mem_info alloced = info_at(i);
       leaked += alloced.bytes_alloced;
       total  += alloced.initial_size;
-      // TODO check for loops to prevent N consecutive "lost x bytes at main.c:11". Perhaps change the memtrace_malloc() implementation
+      // TODO check for loops to prevent N consecutive "lost x bytes at main.c:11". Perhaps change the memtrace_malloc() implementationS
 
-      // if (alloced.bytes_alloced > 0 && alloced.line != 0) {
       if (alloced.bytes_alloced > 0) {
          printf("\nAllocated at %s:%zu ", alloced.file, alloced.line);
          printf("and%s lost%s: %zu\n", ANSI_COLOR_RED, ANSI_COLOR_RESET, alloced.bytes_alloced);
