@@ -76,15 +76,16 @@ void* memtrace_malloc(const size_t size, const char* file, size_t line) {
 void* memtrace_calloc(const size_t len, const size_t size, const char* file, size_t line) {
    void* ptr = malloc(size*len);
    if (ptr != 0) {
+      current += size*len;
+      total += size*len;
+      if (current > peak) peak = current;
+
       mem_info new;
       new.alloced = size*len;
       new.line = line;
       new.file = file;
       new.self = ptr;
       info_push(new);
-      current += size*len;
-      total += size*len;
-      if (current > peak) peak = current;
    }
    memset_(ptr, 0, size);
    return ptr;
@@ -94,18 +95,18 @@ void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t li
    void* tmp = realloc(ptr, size);
    for (size_t i = 0; i < info.size; i++) {
       if (ptr == info_at(i).self) {
+         current -= info_at(i).alloced;
+         current += size;
+         total -= info_at(i).alloced;
+         total += size;
+         if (current > peak) peak = current;
+
          mem_info new;
          new.alloced = size;
          new.self = tmp;
          new.file = file;
          new.line = line;
          info_replace(i, new);
-
-         current -= info_at(i).alloced;
-         current += size;
-         total -= info_at(i).alloced;
-         total += size;
-         if (current > peak) peak = current;
       }
    }
    return tmp;
