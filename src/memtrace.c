@@ -107,6 +107,7 @@ void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t li
          new.file = file;
          new.line = line;
          info_replace(i, new);
+         break;
       }
    }
    return tmp;
@@ -119,6 +120,7 @@ void memtrace_free(void* ptr) {
          mem_info new = info_at(i);
          new.alloced = 0;
          info_replace(i, new);
+         break;
       }
    }
    free(ptr);
