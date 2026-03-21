@@ -16,6 +16,8 @@ of all the important information.
 cc -onob nob.c && ./nob
 ```
 
+There is a flag `--lib` available after running `./nob` - it compiles memtrace.c into a static library, putting it into the build/ directory
+
 # And run: 
 ```
 ./build/main
