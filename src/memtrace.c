@@ -20,7 +20,7 @@ static inline void *memset_(void *b, size_t c, size_t len)
    while(a && len > 0)
    {
       *a = c;
-      b++;
+      c++;
       len--;
    }
    return b;
