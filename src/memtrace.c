@@ -1,4 +1,3 @@
-#define ANSI_COLOR_RESET   "\x1b[0m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 
 #include "../include/memtrace.h"
@@ -8,26 +7,27 @@
 #undef free
 #include "../include/darray.h"
 
-inline size_t strlen_(char* p) {
+static inline size_t strlen_(char* p) {
    char* base = p;
    while (*p != 0) p++;
    return p-base;
 }
 
 
-void *memset_(void *b, size_t c, size_t len)
+static inline void *memset_(void *b, size_t c, size_t len)
 {
-    while(b && len > 0)
-    {
-        *(char*)b = c;
-        b++;
-        len--;
-    }
-    return b;
+   char* a = (char*)b;
+   while(a && len > 0)
+   {
+      *a = c;
+      b++;
+      len--;
+   }
+   return b;
 }
 
 int print_line_from(const char *filename, int pos) {
-    if (pos-- < 0) return -1; // not sure why we need to decrement it but i think it works... mostly?
+    if (pos-- < 0) return -1;
     FILE *f = fopen(filename, "r");
     if (!f) return -1;
     char line[256];
