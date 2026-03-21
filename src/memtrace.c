@@ -87,7 +87,7 @@ void* memtrace_calloc(const size_t len, const size_t size, const char* file, siz
       new.self = ptr;
       info_push(new);
    }
-   memset_(ptr, 0, size);
+   memset_(ptr, 0, size*len);
    return ptr;
 }
 
@@ -145,11 +145,6 @@ int memtrace_exit(void) { // to return from main
    printf("==========================\n");
 
    if (leaked == 0) printf("[MEMTRACE]: No memory leaks detected.\n");
-
-   current = 0;
-   peak = 0;
-   total = 0;
-
    info_free();
    return 0;
 }
