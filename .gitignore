@@ -1,4 +1,5 @@
 build/main
+build/libmemtrace.a
 build/test
 nob.old
 nob
