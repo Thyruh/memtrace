@@ -37,14 +37,17 @@ int print_line_from(const char *filename, int pos) {
     return found ? 0 : -1;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 DARRAY_INIT(mem_info)
 DARRAY_BIND(mem_info, info)
+#pragma clang diagnostic pop
 
-size_t total = 0;
+size_t total   = 0;
 size_t current = 0;
 size_t peak    = 0;
 
-void* memtrace_malloc(const size_t size, const char* file, size_t line) {
+void* memtrace_malloc(const size_t size, const char* file, const size_t line) {
    void* ptr = malloc(size);
    if (ptr != 0) {
       mem_info new;
@@ -60,7 +63,7 @@ void* memtrace_malloc(const size_t size, const char* file, size_t line) {
    return ptr;
 }
 
-void* memtrace_calloc(const size_t len, const size_t size, const char* file, size_t line) {
+void* memtrace_calloc(const size_t len, const size_t size, const char* file, const size_t line) {
    void* ptr = calloc(len, size);
    if (ptr != 0) {
       size_t total_size = len * size;
@@ -77,7 +80,7 @@ void* memtrace_calloc(const size_t len, const size_t size, const char* file, siz
    return ptr;
 }
 
-void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t line) {
+void* memtrace_realloc(void* ptr, const size_t size, const char* file, const size_t line) {
    if (!ptr) return memtrace_malloc(size, file, line);
    void* tmp = realloc(ptr, size);
    if (!tmp) return tmp;
