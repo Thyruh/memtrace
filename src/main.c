@@ -7,12 +7,7 @@ int main(void) {
    free(ptr2);
    void* ptr3 = malloc(30);
 
-   int sum = 0;
-
    void* ptr5 = realloc(ptr1, 100);
-
-   printf("sum = %d", sum);
-   free(ptr3);
 
    free(ptr5);
 

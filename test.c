@@ -48,16 +48,12 @@
 #include <string.h>
 #include <stdint.h>
 
-/* ── access internal globals for white-box assertions ─────────────────── */
 extern size_t current;
 extern size_t peak;
+extern size_t total;
 
-/* ── include order: memtrace.h LAST ──────────────────────────────────── */
 #include "include/memtrace.h"
 
-/* ═══════════════════════════════════════════════════════════════════════
- * Minimal harness
- * ═══════════════════════════════════════════════════════════════════════ */
 static int  _tests_run    = 0;
 static int  _tests_passed = 0;
 
@@ -310,6 +306,7 @@ static void test_L_sequential_reuse(void) {
 
    free(p2);
    ASSERT(current == 0, "L3: current == 0 after second free");
+   printf("current = %zu\n", current);
    memtrace_exit();
 }
 

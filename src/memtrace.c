@@ -9,21 +9,18 @@
 
 static inline size_t strlen_(char* p) {
    char* base = p;
-   while (*p != 0) p++;
+   while (*p) p++;
    return p-base;
 }
 
-
-static inline void *memset_(void *b, size_t c, size_t len)
-{
-   char* a = (char*)b;
-   while(a && len > 0)
-   {
-      *a = c;
-      c++;
-      len--;
-   }
-   return b;
+static inline void *memset_(void *b, int c, size_t len) {
+    __UINT8_TYPE__ *a = (__UINT8_TYPE__*)b;
+    while (len > 0) {
+        *a = (__UINT8_TYPE__)c;
+        a++;
+        len--;
+    }
+    return b;
 }
 
 int print_line_from(const char *filename, int pos) {
@@ -101,11 +98,9 @@ void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t li
          total += size;
          if (current > peak) peak = current;
 
-         mem_info new;
+         mem_info new = info_at(i);
          new.alloced = size;
          new.self = tmp;
-         new.file = file;
-         new.line = line;
          info_replace(i, new);
          break;
       }
@@ -145,6 +140,10 @@ int memtrace_exit(void) { // to return from main
    printf("Total: %zuB\n", total); 
    printf("Peak: %zuB\n", peak);
    printf("==========================\n");
+
+   total = 0;
+   peak = 0;
+   current = 0;
 
    if (leaked == 0) printf("[MEMTRACE]: No memory leaks detected.\n");
    info_free();
