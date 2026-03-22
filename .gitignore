@@ -1,5 +1,4 @@
-.build/main
-.build/test
+build/main
 nob.old
 nob
 test
