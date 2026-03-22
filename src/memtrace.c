@@ -112,9 +112,8 @@ void memtrace_free(void* ptr) {
    for (size_t i = 0; i < info.size; i++) {
       if (ptr == info_at(i).self) {
          current -= info_at(i).alloced;
-         mem_info new = info_at(i);
-         new.alloced = 0;
-         info_replace(i, new);
+         info_replace(i, info_at(info.size-1));
+         info_pop();
          break;
       }
    }

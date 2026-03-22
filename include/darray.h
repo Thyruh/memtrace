@@ -29,7 +29,7 @@ static inline bool T##_push(Darray_##T* darray, T item) {                       
 }                                                                                                                      \
 static inline T T##_pop(Darray_##T* darray) {                                                                          \
    if (darray->size == 0) {                                                                                            \
-      printf("\n%s%sPanic: _pop() on empty darray\n%s", ANSI_COLOR_RED, "[DARRAY] ", ANSI_COLOR_RESET);               \
+      printf("\n%s%sPanic: _pop() on empty darray\n%s", ANSI_COLOR_RED, "[DARRAY] ", ANSI_COLOR_RESET);                \
       exit(1);                                                                                                         \
    }                                                                                                                   \
    return darray->node[--darray->size];                                                                                \
