@@ -13,16 +13,6 @@ static inline size_t strlen_(char* p) {
    return p-base;
 }
 
-static inline void *memset_(void *b, int c, size_t len) {
-    __UINT8_TYPE__ *a = (__UINT8_TYPE__*)b;
-    while (len > 0) {
-        *a = (__UINT8_TYPE__)c;
-        a++;
-        len--;
-    }
-    return b;
-}
-
 int print_line_from(const char *filename, int pos) {
     if (pos-- < 0) return -1;
     FILE *f = fopen(filename, "r");
@@ -37,7 +27,7 @@ int print_line_from(const char *filename, int pos) {
                 fclose(f);
                 return -2;
             }
-            printf("%s%s%s",ANSI_COLOR_GREEN, line, ANSI_COLOR_RESET);
+            printf("%s%s%s", ANSI_COLOR_GREEN, line, ANSI_COLOR_RESET);
             found = 1;
             break;
         }
@@ -71,25 +61,26 @@ void* memtrace_malloc(const size_t size, const char* file, size_t line) {
 }
 
 void* memtrace_calloc(const size_t len, const size_t size, const char* file, size_t line) {
-   void* ptr = malloc(size*len);
+   void* ptr = calloc(len, size);
    if (ptr != 0) {
-      current += size*len;
-      total += size*len;
+      size_t total_size = len * size;
+      current += total_size;
+      total += total_size;
       if (current > peak) peak = current;
-
       mem_info new;
-      new.alloced = size*len;
+      new.alloced = total_size;
       new.line = line;
       new.file = file;
       new.self = ptr;
       info_push(new);
    }
-   memset_(ptr, 0, size*len);
    return ptr;
 }
 
 void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t line) {
+   if (!ptr) return memtrace_malloc(size, file, line);
    void* tmp = realloc(ptr, size);
+   if (!tmp) return tmp;
    for (size_t i = 0; i < info.size; i++) {
       if (ptr == info_at(i).self) {
          current -= info_at(i).alloced;
@@ -97,10 +88,11 @@ void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t li
          total -= info_at(i).alloced;
          total += size;
          if (current > peak) peak = current;
-
          mem_info new = info_at(i);
          new.alloced = size;
          new.self = tmp;
+         new.file = file;
+         new.line = line;
          info_replace(i, new);
          break;
       }
@@ -109,6 +101,7 @@ void* memtrace_realloc(void* ptr, const size_t size, const char* file, size_t li
 }
 
 void memtrace_free(void* ptr) {
+   if(!ptr) return;
    for (size_t i = 0; i < info.size; i++) {
       if (ptr == info_at(i).self) {
          current -= info_at(i).alloced;
@@ -120,30 +113,25 @@ void memtrace_free(void* ptr) {
    free(ptr);
 }
 
-int memtrace_exit(void) { // to return from main
+int memtrace_exit(void) {
    size_t leaked = 0;
 
-   for(size_t i = 0; i < info.size; i++) {
+   for (size_t i = 0; i < info.size; i++) {
       mem_info alloced = info_at(i);
       leaked += alloced.alloced;
-
-      if (alloced.alloced > 0) {
-         printf("\nAllocated at %s:%zu ", alloced.file, alloced.line);
-         printf("and%s lost%s: %zu\n", ANSI_COLOR_RED, ANSI_COLOR_RESET, alloced.alloced);
-         print_line_from(alloced.file, alloced.line);
-      }
+      printf("\nAllocated at %s:%zu ", alloced.file, alloced.line);
+      printf("and%s lost%s: %zu\n", ANSI_COLOR_RED, ANSI_COLOR_RESET, alloced.alloced);
+      print_line_from(alloced.file, alloced.line);
    }
 
    printf("\n========[SUMMARY]=========\n");
    printf("Leaked: %zuB\n", leaked);
-   printf("Total: %zuB\n", total); 
+   printf("Total: %zuB\n", total);
    printf("Peak: %zuB\n", peak);
    printf("==========================\n");
-
    total = 0;
    peak = 0;
    current = 0;
-
    if (leaked == 0) printf("[MEMTRACE]: No memory leaks detected.\n");
    info_free();
    return 0;
