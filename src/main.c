@@ -9,6 +9,8 @@ int main(void) {
 
    void* ptr5 = realloc(ptr1, 100);
 
+   printf("%p", ptr3);
+
    free(ptr5);
 
    return memtrace_exit();

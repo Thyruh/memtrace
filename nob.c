@@ -3,7 +3,7 @@
 #include "nob.h"
 
 #define CXX "clang"
-#define CFLAGS "-Wall", "-Wextra", "-pedantic", "-O3"
+#define CFLAGS "-Wall", "-Wextra", "-pedantic", "-O3", "-std=c23"
 #define CDEBUGFLAGS "-ggdb", "-O0"
 #define DESTINATION "build/"
 #define SRC "src/"
